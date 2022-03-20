@@ -4,13 +4,15 @@ import random
 import string
 
 
-names = pd.read_csv("./names.csv")
-# names["email"] = names["first"].apply(lambda x: x[0]).str.lower() + names["last"].str.lower() + "@notarealcompany.org"
-# names.to_csv("names.csv", index=False)
-# names["git"] = names["first"] + " " + names["last"] + " <" + names["email"] + ">"
+def loadnames():
+    names = pd.read_csv("./names.csv")
+    # names["email"] = names["first"].apply(lambda x: x[0]).str.lower() + names["last"].str.lower() + "@notarealcompany.org"
+    # names.to_csv("names.csv", index=False)
+    # names["git"] = names["first"] + " " + names["last"] + " <" + names["email"] + ">"
+    return names
 
 
-def random_string(length = None, l=5, u=30):
+def random_string(length=None, l=5, u=30):
     if length is None:
         length = random.randint(l, u)
     letters = string.ascii_lowercase
@@ -18,24 +20,30 @@ def random_string(length = None, l=5, u=30):
     return out
 
 
-def commit(author=None, m=None):
+def commit(author=None, m=None, system_call=False, verbose=False):
     if m is None:
         m = random_string()
-    if author is not None:
+    if author is None:
+        names = loadnames()
+        author = random_authors(names, num=1)
+        author = author[0]
+    cmd_commit = "git commit -m \"" + m + "\" --author \"" + author + "\""
+    if verbose:
+        print(cmd_commit)
+    if system_call:
         os.system("git add .")
-        cmd_commit = "git commit -m \"" + m + "\" --author \"" + author + "\""
         os.system(cmd_commit)
+    return None
 
 
-def random_authors(names, num = 10):
+def random_authors(names, num=10):
     return [a for a in random.sample(list(names["git"]), num)]
 
 
 def random_content(numlines=None, l=5, u=100):
     if numlines is None:
         numlines = random.randint(l, u)
-    new_content = [random_string() for i in range(numlines)]
-    # new_content = '\n'.join(new_content)
+    new_content = [random_string() + "\n" for i in range(numlines)]
     return new_content
 
 
@@ -45,23 +53,27 @@ def modify_contents(old_contents, num=10):
     ind = [i for i in range(N)]
     ind = random.sample(ind, min(num, N))
     for i in ind:
+        new_contents[i] = random_string()
         new_contents[i] = random_string() + "\n"
     return new_contents
 
 
-def new_file(fn = None):
+def new_file(fn=None, new_content=None, verbose=False):
     if fn is None:
         fn = random_string() + "." + random_string(l=2, u=3)
     if not os.path.exists(fn):
-        new_content = random_content()
+        if new_content is None:
+            new_content = random_content()
         with open(fn, 'w') as f:
             f.writelines(new_content)
     else:
         modify_file(fn=fn)
-    return None
+    if verbose:
+        print(fn)
+    return fn
 
 
-def modify_file(fn = None, append = None):
+def modify_file(fn=None, append=None):
     if append is None:
         append = random.choice([True, False])
     if fn is not None:
@@ -70,21 +82,42 @@ def modify_file(fn = None, append = None):
             with open(fn, 'a') as f:
                 f.writelines(new_content)
         else:
-            with open('stats.txt', 'r') as file:
+            with open(fn, 'r') as file:
                 old_content = file.readlines()
             new_content = modify_contents(old_content)
             with open(fn, 'w') as f:
                 f.writelines(new_content)
-        return None
-
-
-def random_existing_file():
-    prohibited = ['.gitattributes', '.gitignore', '.idea', 'names.csv', 'random-git-log.py']
-    file_list = os.listdir()
-    file_list = [f for f in file_list if f not in prohibited]
-    return random.sample(file_list)
-
-
-def random_git_log():
     return None
 
+
+def random_existing_file(num=1):
+    prohibited = ['.git', '.gitattributes', '.gitignore', '.idea', 'names.csv', 'random-git-log.py']
+    file_list = os.listdir()
+    file_list = [f for f in file_list if f not in prohibited]
+    if len(file_list) > 0:
+        out = random.sample(file_list, min(len(file_list),num))
+    else:
+        out = []
+    return out
+
+
+def random_git_log(names=None, numauthors=10, numbranches=3, historylength=100):
+    if names is None:
+        names = loadnames()
+    # get some random authors
+    # make and modify files randomly
+    # randomly choose an author to commit the changes
+    # implement branching and merging
+    return None
+
+
+if __name__ == "__main__":
+    names = loadnames()
+    random_string()
+    random_authors(names, num=10)
+    a = random_content()
+    modify_contents(a, num=10)
+    a = new_file()
+    modify_file(a)
+    random_existing_file()
+    commit(verbose=True)
