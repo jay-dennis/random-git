@@ -101,13 +101,42 @@ def random_existing_file(num=1):
     return out
 
 
-def random_git_log(names=None, numauthors=10, numbranches=3, historylength=100):
+def branch(name=None):
+    cmdnew = "git branch " + name
+    cmdcheckout = "git checkout " + name
+    os.system(cmdnew)
+    os.system(cmdcheckout)
+    return None
+
+
+def merge(receiving=None, transmitting=None):
+    if (receiving is not None) & (transmitting is not None):
+        os.system("git checkout " + receiving)
+        os.system("git merge --no-ff " + transmitting)
+        # merge deconflict
+        ## parse output from merge
+        ## look for "CONFLICT (content): Merge conflict in <file name>"
+    return None
+
+
+def deconflict(fn):
+    # place holder
+    # current branch begins "<<<<<<< HEAD"
+    # sep and transmitting branch begins "======="
+    # conflict ends with ">>>>>>> <transmitting branch name>
+    # allow randomly choosing which to accept
+    # then run commit() again with m = "Merging brach <branch name>"
+    return None
+
+
+def random_git_log(names=None, numauthors=10, numbranches=3, numcommits=100, mergefrequency=5):
     if names is None:
         names = loadnames()
     # get some random authors
     # make and modify files randomly
     # randomly choose an author to commit the changes
-    # implement branching and merging
+    # randomly choose which branch will be edited
+    # every mergefrequency, merge the current branch into main and deconflict
     return None
 
 
