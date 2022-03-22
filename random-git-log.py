@@ -2,6 +2,7 @@ import pandas as pd
 import os
 import random
 import string
+import subprocess
 
 
 def loadnames():
@@ -115,19 +116,56 @@ def merge(receiving=None, transmitting=None):
     if (receiving is not None) & (transmitting is not None):
         os.system("git checkout " + receiving)
         os.system("git merge --no-ff " + transmitting)
+        result = subprocess.run(['dir', '-a'], stdout=subprocess.PIPE)
+        result.stdout.decode('utf-8')
+        result = subprocess.run(['ls', '-l'], shell=True, capture_output=True)
+        result = subprocess.run(["git", "log"], shell=True, capture_output=True)
+        result.stdout
+        result.stderr.decode('utf-8')
         # merge deconflict
         ## parse output from merge
         ## look for "CONFLICT (content): Merge conflict in <file name>"
+        ## deconflict each conflicted file
+        ## commit(m="Merging brach " + transmitting)
     return None
 
 
-def deconflict(fn):
+def deconflict(fn, resolve="Head", transmitting=None):
     # place holder
     # current branch begins "<<<<<<< HEAD"
     # sep and transmitting branch begins "======="
     # conflict ends with ">>>>>>> <transmitting branch name>
     # allow randomly choosing which to accept
-    # then run commit() again with m = "Merging brach <branch name>"
+    # then run commit() again with m = "Merging brach <branch name>" after resolving all conflicts in all files (outside this function)
+    with open(fn, 'r') as f:
+        content = f.readlines()
+    conflicts = {}
+    linenum = 0
+    for line in content:
+        linenum = linenum + 1
+        ind = len(conflicts) + 1
+        if "<<<<<<< HEAD" in line:
+            conflicts[ind] = {"start":None, "mid":None, "end":None}
+            conflicts[ind]["start"] = linenum
+        elif "=======" in line:
+            if conflicts[ind]["start"] is not None:
+                conflicts[ind]["mid"] = linenum
+        elif ">>>>>>> " in line:
+            if conflicts[ind]["start"] is not None:
+                conflicts[ind]["end"] = linenum
+    for i in reversed(list(conflicts.keys())):  # start with the last conflict and work backwards
+        head = [c for c in range(conflicts[i]["start"], conflicts[i]["mid"]+1)]
+        tran = [c for c in range(conflicts[i]["mid"], conflicts[i]["end"]+1)]
+        if resolve == "random":
+            resolve = random.choice(["Head", "transmitting"])
+        if resolve == "Head":
+            for j in tran[::-1]:
+                content.pop(j)
+        elif resolve == "transmitting":
+            for j in head[::-1]:  # remove lines starting with the last one and working backwards
+                content.pop(j)
+    with open(fn, 'w') as f:
+        f.writelines()
     return None
 
 
