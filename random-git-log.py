@@ -77,16 +77,18 @@ def modify_file(fn=None, append=None):
     if append is None:
         append = random.choice([True, False])
     if fn is not None:
-        if append:
-            new_content = random_content(l=2, u=7)
-            with open(fn, 'a') as f:
-                f.writelines(new_content)
-        else:
-            with open(fn, 'r') as file:
-                old_content = file.readlines()
-            new_content = modify_contents(old_content)
-            with open(fn, 'w') as f:
-                f.writelines(new_content)
+        prohibited = ["random-git-log.py", "names.csv", ".gitignore", ".gitattributes"]
+        if fn not in prohibited:
+            if append:
+                new_content = random_content(l=2, u=7)
+                with open(fn, 'a') as f:
+                    f.writelines(new_content)
+            else:
+                with open(fn, 'r') as file:
+                    old_content = file.readlines()
+                new_content = modify_contents(old_content)
+                with open(fn, 'w') as f:
+                    f.writelines(new_content)
     return None
 
 
