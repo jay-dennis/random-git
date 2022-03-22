@@ -105,14 +105,18 @@ def random_existing_file(num=1):
     return out
 
 
-def branch(name=None):
+def new_branch(name=None):
     # cmdnew = "git branch " + name
-    # cmdcheckout = "git checkout " + name
     # os.system(cmdnew)
-    # os.system(cmdcheckout)
     newbranch = subprocess.run(['git', 'branch', name], shell=True, capture_output=True)
+    return newbranch
+
+
+def checkout_branch(name=None):
+    # cmdcheckout = "git checkout " + name
+    # os.system(cmdcheckout)
     checkoutbranch = subprocess.run(['git', 'checkout', name], shell=True, capture_output=True)
-    return None
+    return checkoutbranch
 
 
 def merge(receiving=None, transmitting=None):
@@ -179,11 +183,21 @@ def random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcom
     git_init()
     authorlist = random_authors(names, num=numauthors)  # get some random authors
     branches = [random_string(l=5, u=10) for b in range(numbranches)]  # create branch list
+    files = []
     for i in range(numfiles):
-        # randomly choose which branch will be edited
+        current_branch = random.choice(branches)  # randomly choose which branch will be edited
+        new_branch(current_branch)
+        checkout_branch(current_branch)
         newfn = new_file()  # make and modify files randomly
+        files = files + [newfn]  # keep a running list of file names
         commit(authorlist=authorlist)  # randomly choose an author to commit the changes
-    # every mergefrequency, merge the current branch into main and deconflict
+    for i in range(numcommits):
+        current_branch = random.choice(branches)
+        checkout_branch(current_branch)
+        for f in random.sample(files, random.randint(1,len(files))):
+            modify_file(fn=f)
+        commit(authorlist=authorlist)
+    ## every mergefrequency, merge the current branch into main and deconflict
     return None
 
 
