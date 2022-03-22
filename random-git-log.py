@@ -140,6 +140,17 @@ def random_git_log(names=None, numauthors=10, numbranches=3, numcommits=100, mer
     return None
 
 
+def make_gitignore():
+    gitignore = ["/**/.idea\n", "/**/*.csv\n", "/**/*.py\n"]
+    if os.path.exists(".gitignore"):
+        mode = 'a'
+    else:
+        mode = 'w'
+    with open(".gitignore", mode) as f:
+        f.writelines(gitignore)
+    return None
+
+
 if __name__ == "__main__":
     names = loadnames()
     random_string()
