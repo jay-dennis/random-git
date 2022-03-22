@@ -21,13 +21,14 @@ def random_string(length=None, l=5, u=30):
     return out
 
 
-def commit(author=None, m=None, system_call=False, verbose=False):
+def commit(author=None, authorlist=None, m=None, system_call=False, verbose=False):
     if m is None:
         m = random_string()
-    if author is None:
+    if authorlist is None:
         names = loadnames()
-        author = random_authors(names, num=1)
-        author = author[0]
+        authorlist = random_authors(names, num=1)
+    if author is None:
+        author = random.choice(authorlist)
     cmd_commit = "git commit -m \"" + m + "\" --author \"" + author + "\""
     if verbose:
         print(cmd_commit)
@@ -105,10 +106,12 @@ def random_existing_file(num=1):
 
 
 def branch(name=None):
-    cmdnew = "git branch " + name
-    cmdcheckout = "git checkout " + name
-    os.system(cmdnew)
-    os.system(cmdcheckout)
+    # cmdnew = "git branch " + name
+    # cmdcheckout = "git checkout " + name
+    # os.system(cmdnew)
+    # os.system(cmdcheckout)
+    newbranch = subprocess.run(['git', 'branch', name], shell=True, capture_output=True)
+    checkoutbranch = subprocess.run(['git', 'checkout', name], shell=True, capture_output=True)
     return None
 
 
@@ -126,7 +129,7 @@ def merge(receiving=None, transmitting=None):
         ## parse output from merge
         ## look for "CONFLICT (content): Merge conflict in <file name>"
         ## deconflict each conflicted file
-        ## commit(m="Merging brach " + transmitting)
+        ## commit(authorlist = , m="Merging brach " + transmitting)
     return None
 
 
@@ -169,14 +172,26 @@ def deconflict(fn, resolve="Head", transmitting=None):
     return None
 
 
-def random_git_log(names=None, numauthors=10, numbranches=3, numcommits=100, mergefrequency=5):
+def random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcommits=100, mergefrequency=5):
     if names is None:
         names = loadnames()
-    # get some random authors
-    # make and modify files randomly
-    # randomly choose an author to commit the changes
-    # randomly choose which branch will be edited
+    make_gitignore()
+    git_init()
+    authorlist = random_authors(names, num=numauthors)  # get some random authors
+    branches = [random_string(l=5, u=10) for b in range(numbranches)]  # create branch list
+    for i in range(numfiles):
+        # randomly choose which branch will be edited
+        newfn = new_file()  # make and modify files randomly
+        commit(authorlist=authorlist)  # randomly choose an author to commit the changes
     # every mergefrequency, merge the current branch into main and deconflict
+    return None
+
+
+def git_init():
+    if not os.path.exists(".git"):
+        os.system("git init")
+    # TODO: check main branch name
+    os.system("git branch -m main")
     return None
 
 
