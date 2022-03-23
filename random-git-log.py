@@ -149,10 +149,9 @@ def deconflict(fn, resolve="Head", transmitting=None):
     conflicts = {}
     linenum = 0
     for line in content:
-        linenum = linenum + 1
-        ind = len(conflicts) + 1
         if "<<<<<<< HEAD" in line:
-            conflicts[ind] = {"start":None, "mid":None, "end":None}
+            ind = len(conflicts) + 1
+            conflicts[ind] = {"start": None, "mid": None, "end": None}
             conflicts[ind]["start"] = linenum
         elif "=======" in line:
             if conflicts[ind]["start"] is not None:
@@ -160,9 +159,10 @@ def deconflict(fn, resolve="Head", transmitting=None):
         elif ">>>>>>> " in line:
             if conflicts[ind]["start"] is not None:
                 conflicts[ind]["end"] = linenum
+        linenum = linenum + 1
     for i in reversed(list(conflicts.keys())):  # start with the last conflict and work backwards
-        head = [c for c in range(conflicts[i]["start"], conflicts[i]["mid"]+1)]
-        tran = [c for c in range(conflicts[i]["mid"], conflicts[i]["end"]+1)]
+        head = [c for c in range(conflicts[i]["start"], conflicts[i]["mid"]+1)] + [conflicts[i]["end"]]
+        tran = [conflicts[i]["start"]] + [c for c in range(conflicts[i]["mid"], conflicts[i]["end"]+1)]
         if resolve == "random":
             resolve = random.choice(["Head", "transmitting"])
         if resolve == "Head":
@@ -230,3 +230,4 @@ if __name__ == "__main__":
     modify_file(a)
     random_existing_file()
     commit(verbose=True)
+    deconflict("temp.txt", resolve="Head", transmitting=None)
