@@ -119,6 +119,11 @@ def random_existing_file(num=1):
     return out
 
 
+def git_cleanup():
+    info = subprocess.run(['git', 'gc'], shell=True, capture_output=True)
+    return info
+
+
 def new_branch(name=None):
     # cmdnew = "git branch " + name
     # os.system(cmdnew)
@@ -267,6 +272,7 @@ def random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcom
     for current_branch in branches:  # clean up by merging everything to main
         sleep(sleep_time)
         merge(authorlist=authorlist, receiving="main", transmitting=current_branch, checkout=False)
+    git_cleanup()
     return None
 
 
