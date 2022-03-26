@@ -119,21 +119,31 @@ def checkout_branch(name=None):
     return checkoutbranch
 
 
-def merge(receiving=None, transmitting=None):
+def merge(authorlist=None, receiving=None, transmitting=None):
     if (receiving is not None) & (transmitting is not None):
-        os.system("git checkout " + receiving)
-        os.system("git merge --no-ff " + transmitting)
-        result = subprocess.run(['dir', '-a'], stdout=subprocess.PIPE)
-        result.stdout.decode('utf-8')
-        result = subprocess.run(['ls', '-l'], shell=True, capture_output=True)
-        result = subprocess.run(["git", "log"], shell=True, capture_output=True)
-        result.stdout
-        result.stderr.decode('utf-8')
+        # os.system("git checkout " + receiving)
+        # os.system("git merge --no-ff " + transmitting)
+        # result = subprocess.run(['dir', '-a'], stdout=subprocess.PIPE)
+        # result.stdout.decode('utf-8')
+        # result = subprocess.run(['ls', '-l'], shell=True, capture_output=True)
+        # result = subprocess.run(["git", "log"], shell=True, capture_output=True)
+        # result.stdout.decode('utf-8')
+        # result.stderr.decode('utf-8')
+        #
         # merge deconflict
         ## parse output from merge
         ## look for "CONFLICT (content): Merge conflict in <file name>"
         ## deconflict each conflicted file
         ## commit(authorlist = , m="Merging brach " + transmitting)
+        #
+        result = subprocess.run(["git", "merge", "--no-ff", transmitting], shell=True, capture_output=True)
+        output = result.stdout.decode('utf-8')
+        output = output.split("\n")
+        conflicted_files = [o.split("Merge conflict in ")[1] for o in output if "CONFLICT" in o]
+        if len(conflicted_files) > 0:
+            for cf in conflicted_files:
+                deconflict(fn=cf, resolve="Head", transmitting=None)
+        commit(authorlist=authorlist, m="Merging brach " + transmitting)
     return None
 
 
@@ -229,5 +239,5 @@ if __name__ == "__main__":
     a = new_file()
     modify_file(a)
     random_existing_file()
-    commit(verbose=True)
+    commit(verbose=True, system_call=True)
     deconflict("temp.txt", resolve="Head", transmitting=None)
