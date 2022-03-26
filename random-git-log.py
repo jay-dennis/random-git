@@ -5,11 +5,15 @@ import string
 import subprocess
 
 
-def loadnames():
-    names = pd.read_csv("./names.csv")
-    # names["email"] = names["first"].apply(lambda x: x[0]).str.lower() + names["last"].str.lower() + "@notarealcompany.org"
-    # names.to_csv("names.csv", index=False)
-    # names["git"] = names["first"] + " " + names["last"] + " <" + names["email"] + ">"
+def loadnames(fn=None, process=False, save=False):
+    if fn is None:
+        fn = "./names.csv"
+    names = pd.read_csv(fn)
+    if process:
+        names["email"] = names["first"].apply(lambda x: x[0]).str.lower() + names["last"].str.lower() + "@notarealcompany.org"
+        names["git"] = names["first"] + " " + names["last"] + " <" + names["email"] + ">"
+        if save:
+            names.to_csv(fn, index=False)
     return names
 
 
