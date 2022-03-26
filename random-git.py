@@ -7,7 +7,7 @@ from time import sleep
 import urllib.request
 
 
-sleep_time = 3  # give the file system time to catch up with git during commits and merges
+sleep_time = 2  # give the file system time to catch up with git during commits and merges
 
 
 def get_word_list():
@@ -110,7 +110,7 @@ def modify_file(fn=None, append=None):
     if append is None:
         append = random.choice([True, False])
     if fn is not None:
-        prohibited = ["random-git-log.py", "names.csv", ".gitignore", ".gitattributes"]
+        prohibited = ["random-git.py", "names.csv", ".gitignore", ".gitattributes"]
         if fn not in prohibited:
             if append:
                 new_content = random_content(l=2, u=7)
@@ -126,7 +126,7 @@ def modify_file(fn=None, append=None):
 
 
 def random_existing_file(num=1):
-    prohibited = ['.git', '.gitattributes', '.gitignore', '.idea', 'names.csv', 'random-git-log.py']
+    prohibited = ['.git', '.gitattributes', '.gitignore', '.idea', 'names.csv', 'random-git.py']
     file_list = os.listdir()
     file_list = [f for f in file_list if f not in prohibited]
     if len(file_list) > 0:
