@@ -27,6 +27,7 @@ def random_string(length=None, l=5, u=30):
 
 
 def commit(author=None, authorlist=None, m=None, system_call=False, verbose=False):
+    sleep(3)
     if m is None:
         m = random_string()
     if authorlist is None:
@@ -130,10 +131,12 @@ def checkout_branch(name=None):
         checkoutbranch = subprocess.run(['git', 'checkout', name], shell=True, capture_output=True)
     else:
         checkoutbranch = None
+    sleep(3)
     return checkoutbranch
 
 
 def merge(authorlist=None, receiving=None, transmitting=None, checkout=False):
+    sleep(3)
     if (receiving is not None) & (transmitting is not None):
         # os.system("git checkout " + receiving)
         # os.system("git merge --no-ff " + transmitting)
@@ -160,7 +163,8 @@ def merge(authorlist=None, receiving=None, transmitting=None, checkout=False):
         if len(conflicted_files) > 0:
             for cf in conflicted_files:
                 deconflict(fn=cf, resolve="Head", transmitting=None)
-        commit(authorlist=authorlist, m="Merging brach " + transmitting, system_call=True)
+        commit(authorlist=authorlist, m="Merging branch " + transmitting, system_call=True)
+    sleep(3)
     return None
 
 
@@ -224,7 +228,7 @@ def make_gitignore():
     return None
 
 
-def random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcommits=10, mergefrequency=5):
+def random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcommits=25, mergefrequency=5):
     if names is None:
         names = loadnames()
     make_gitignore()
@@ -233,6 +237,7 @@ def random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcom
     branches = [random_string(l=5, u=10) for b in range(numbranches)]  # create branch list
     files = []
     for i in range(numfiles):
+        sleep(3)
         if i > 0:  # first commit to main branch
             current_branch = random.choice(branches)  # randomly choose which branch will be edited
             info = new_branch(name=current_branch)
@@ -240,25 +245,22 @@ def random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcom
         newfn = new_file()  # make and modify files randomly
         files = files + [newfn]  # keep a running list of file names
         commit(authorlist=authorlist, system_call=True)  # randomly choose an author to commit the changes
-        sleep(2)
     for i in range(numcommits):
+        sleep(3)
         current_branch = random.choice(branches)
         checkout_branch(current_branch)
         files = random_existing_file(num=5)
-        # for f in random.sample(files, random.randint(1,len(files))):
         for f in files:
                 modify_file(fn=f)
         commit(authorlist=authorlist, system_call=True)
-        sleep(2)
         if i % mergefrequency == 0:
+            sleep(3)
             ## every mergefrequency, merge the current branch into main and deconflict
-            checkout_branch("main")
-            merge(authorlist=authorlist, receiving="main", transmitting=current_branch, checkout=False)
-            sleep(2)
+            merge(authorlist=authorlist, receiving="main", transmitting=current_branch, checkout=True)
     checkout_branch("main")
     for current_branch in branches:  # clean up by merging everything to main
+        sleep(3)
         merge(authorlist=authorlist, receiving="main", transmitting=current_branch, checkout=False)
-        sleep(2)
     return None
 
 
@@ -275,4 +277,4 @@ if __name__ == "__debug__":
     deconflict("temp.txt", resolve="Head", transmitting=None)
 
 if __name__ == "__debug__":
-    random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcommits=100, mergefrequency=5)
+    random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcommits=30, mergefrequency=5)
