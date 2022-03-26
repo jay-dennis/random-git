@@ -4,9 +4,18 @@ import random
 import string
 import subprocess
 from time import sleep
+import urllib.request
 
 
 sleep_time = 3  # give the file system time to catch up with git during commits and merges
+
+
+def get_word_list():
+    word_site = "https://www.mit.edu/~ecprice/wordlist.10000"
+    response = urllib.request.urlopen(word_site)
+    txt = response.read()
+    words = txt.splitlines()
+    return words
 
 
 def loadnames(fn=None, process=False, save=False):
@@ -29,10 +38,19 @@ def random_string(length=None, l=5, u=30):
     return out
 
 
+def random_words(num=None, l=1, u=7):
+    if num is None:
+        num = random.randint(l, u)
+    words = get_word_list()
+    words = random.sample(words, num)
+    words = " ".join([i.decode("utf-8") for i in words])
+    return words
+
+
 def commit(author=None, authorlist=None, m=None, system_call=True, verbose=False):
     sleep(sleep_time)
     if m is None:
-        m = random_string()
+        m = random_words()
     if author is None:
         if authorlist is None:
             names = loadnames()
@@ -59,7 +77,7 @@ def random_authors(names, num=10):
 def random_content(numlines=None, l=5, u=100):
     if numlines is None:
         numlines = random.randint(l, u)
-    new_content = [random_string() + "\n" for i in range(numlines)]
+    new_content = [random_words() + "\n" for i in range(numlines)]
     return new_content
 
 
@@ -69,14 +87,13 @@ def modify_contents(old_contents, num=10):
     ind = [i for i in range(N)]
     ind = random.sample(ind, min(num, N))
     for i in ind:
-        new_contents[i] = random_string()
-        new_contents[i] = random_string() + "\n"
+        new_contents[i] = random_words() + "\n"
     return new_contents
 
 
 def new_file(fn=None, new_content=None, verbose=False):
     if fn is None:
-        fn = random_string() + "." + random_string(l=2, u=3)
+        fn = random_words(l=1, u=3).replace(" ", "_") + "." + random_string(l=2, u=3)
     if not os.path.exists(fn):
         if new_content is None:
             new_content = random_content()
@@ -239,13 +256,13 @@ def make_gitignore():
     return None
 
 
-def random_git_log(names=None, numauthors=10, numfiles=10, numbranches=3, numcommits=25, mergefrequency=5):
+def random_git_log(names=None, numauthors=5, numfiles=5, numbranches=3, numcommits=10, mergefrequency=5):
     if names is None:
         names = loadnames()
     make_gitignore()
     git_init()
     authorlist = random_authors(names, num=numauthors)  # get some random authors
-    branches = [random_string(l=5, u=10) for b in range(numbranches)]  # create branch list
+    branches = [random_words(l=1, u=2).replace(" ", "-") for b in range(numbranches)]  # create branch list
     files = []
     for i in range(numfiles):
         sleep(sleep_time)
@@ -288,5 +305,6 @@ if __name__ == "__debug__":
     commit(verbose=True, system_call=True)
     deconflict("temp.txt", resolve="Head", transmitting=None)
 
+
 if __name__ == "__main__":
-    random_git_log(names=None, numauthors=5, numfiles=10, numbranches=3, numcommits=20, mergefrequency=5)
+    random_git_log(names=None, numauthors=5, numfiles=5, numbranches=3, numcommits=20, mergefrequency=5)
