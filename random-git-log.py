@@ -263,7 +263,6 @@ def random_git_log(names=None, numauthors=5, numfiles=5, numbranches=3, numcommi
     git_init()
     authorlist = random_authors(names, num=numauthors)  # get some random authors
     branches = [random_words(l=1, u=2).replace(" ", "-") for b in range(numbranches)]  # create branch list
-    files = []
     for i in range(numfiles):
         sleep(sleep_time)
         if i > 0:  # first commit to main branch
@@ -271,7 +270,6 @@ def random_git_log(names=None, numauthors=5, numfiles=5, numbranches=3, numcommi
             info = new_branch(name=current_branch)
             info = checkout_branch(name=current_branch)
         newfn = new_file()  # make and modify files randomly
-        files = files + [newfn]  # keep a running list of file names
         commit(authorlist=authorlist, system_call=True)  # randomly choose an author to commit the changes
     for i in range(numcommits):
         sleep(sleep_time)
