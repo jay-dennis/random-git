@@ -182,7 +182,7 @@ def deconflict(fn, resolve="Head", transmitting=None):
             for j in head[::-1]:  # remove lines starting with the last one and working backwards
                 content.pop(j)
     with open(fn, 'w') as f:
-        f.writelines()
+        f.writelines(content)
     return None
 
 
